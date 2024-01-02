@@ -1,0 +1,31 @@
+В зпоследнем задании в таблице [Sales].[SpecialOffer] есть запись с id=1.
+Если она предполагает отсутствие спец предложения, то решение будет иметь следующий вид (но не совсем понятно, по какому критерию ее нужно исключать: по наименованию, проценту скидки, категории?):
+
+--1
+SELECT T1.Name
+FROM [Production].[Product] T1
+JOIN (SELECT T2.ProductID 
+		FROM [Sales].[SpecialOfferProduct] T2
+		JOIN [Sales].[SpecialOffer] T3 ON T2.SpecialOfferID = T3.SpecialOfferID
+		WHERE T3.Category NOT IN ('No Discount')
+		GROUP BY T2.ProductID
+		HAVING COUNT(DISTINCT(T2.SpecialOfferID))>1) T4 ON T1.ProductID = T4.ProductID
+
+--2
+SELECT T1.Name
+FROM [Production].[Product] T1
+WHERE ProductID IN (SELECT ProductID 
+		FROM [Sales].[SpecialOfferProduct] T2
+		JOIN [Sales].[SpecialOffer] T3 ON T2.SpecialOfferID = T3.SpecialOfferID
+		WHERE T3.Category NOT IN ('No Discount')
+		GROUP BY T2.ProductID
+		HAVING COUNT(DISTINCT(T2.SpecialOfferID))>1)
+
+--3
+SELECT T2.NAME
+		FROM [Sales].[SpecialOfferProduct] T1
+		JOIN [Production].[Product] T2 ON T1.ProductID = T2.ProductID
+		JOIN [Sales].[SpecialOffer] T3 ON T1.SpecialOfferID = T3.SpecialOfferID
+		WHERE T3.Category NOT IN ('No Discount')
+		GROUP BY T1.ProductID,T2.NAME
+		HAVING COUNT(DISTINCT(T1.SpecialOfferID))>1

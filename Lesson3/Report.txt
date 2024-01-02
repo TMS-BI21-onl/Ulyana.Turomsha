@@ -1,0 +1,98 @@
+2.	Решите на базе данных AdventureWorks2017 следующие задачи (для поиска ключей можно использовать схему БД ). 
+
+	a)	Вывести список цен в виде текстового комментария, основанного на диапазоне цен для продукта:
+			a.	StandardCost равен 0 или не определен – ‘Not for sale’  
+			b.	StandardCost больше 0, но меньше 100 – ‘<$100’ 
+			c.	StandardCost больше или равно 100, но меньше 500 - ‘ <$500' 
+			d.	Иначе - ‘ >= $500'
+	Вывести имя продукта и новое поле PriceRange.
+	
+	SELECT  [Name]
+		,CASE 
+			WHEN [StandardCost]=0 OR [StandardCost] IS NULL THEN 'Not for sale'
+			WHEN [StandardCost]>0 AND [StandardCost]<100 THEN '<$100'
+			WHEN [StandardCost]>=100 AND [StandardCost]<500 THEN '<$500'
+		ELSE	
+			'>=$500'
+		END AS PriceRange
+	FROM [Production].[Product]
+	ORDER BY [StandardCost]
+	
+	
+	b)	Найти ProductID, BusinessEntityID и имя поставщика продукции из Purchasing.ProductVendor и Purchasing.Vendor, 
+	где StandardPrice больше $10. Также в имени вендора должна присутствовать (вне зависимости от положения) буква X или имя должно начинаться на букву N.	
+	
+	SELECT T1.ProductID, T1.BusinessEntityID, T2.Name
+	FROM [Purchasing].[ProductVendor] T1
+	JOIN [Purchasing].[Vendor] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+	WHERE T1.StandardPrice>10 
+	AND (T2.Name LIKE '%X%' OR T2.Name LIKE 'N%')
+	
+	
+	c)	Найти имена всех вендоров, продукция которых не продавалась за всё время. 
+	
+	--1
+	SELECT T1.Name
+	FROM [Purchasing].[Vendor] T1
+	LEFT JOIN [Purchasing].[ProductVendor] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+	WHERE T2.BusinessEntityID IS NULL
+	
+	--2
+	SELECT Name
+	FROM [Purchasing].[Vendor] 
+	WHERE BusinessEntityID IN 
+	(
+		SELECT BusinessEntityID
+		FROM [Purchasing].[Vendor] 
+		EXCEPT
+		SELECT BusinessEntityID
+		FROM [Purchasing].[ProductVendor] 
+	)
+	
+	
+3.	Решите на базе данных AdventureWorks2017 следующие задачи. 
+
+	a)	Выведите названия продуктов и их цену, модель которых начинается на ‘LL’. Таблицы [Production].[ProductModel] и [Production].[Product].
+	
+	SELECT T1.Name, T1.ListPrice
+	FROM [Production].[Product] T1
+	JOIN [Production].[ProductModel] T2 ON T1.ProductModelID = T2.ProductModelID
+	WHERE T2.Name LIKE 'LL%'
+
+
+	b)	Выведите имена всех вендоров [Purchasing].[Vendor] и имена магазинов [Sales].[Store] одним списком в отсортированном порядке по алфавиту и без дубликатов.
+	
+	SELECT NAME 
+	FROM 
+		(
+			SELECT NAME FROM [Purchasing].[Vendor]
+			UNION
+			SELECT NAME FROM [Sales].[Store]
+		) T1
+	ORDER BY NAME
+
+	c)	Найдите имена продуктов, на которых действовало больше, чем 1 специальное предложение. Таблицы [Sales].[SpecialOffer], 
+	[Sales].[SpecialOfferProduct], [Production].[Product].
+
+	--1
+	SELECT Name
+	FROM [Production].[Product] T1
+	JOIN (SELECT ProductID 
+		FROM [Sales].[SpecialOfferProduct]
+		GROUP BY ProductID
+		HAVING COUNT(DISTINCT(SpecialOfferID))>1) T2 ON T1.ProductID = T2.ProductID
+
+	--2
+	SELECT Name
+	FROM [Production].[Product] 
+	WHERE ProductID IN (SELECT ProductID 
+				FROM [Sales].[SpecialOfferProduct]
+				GROUP BY ProductID
+				HAVING COUNT(DISTINCT(SpecialOfferID))>1)
+
+	--3
+	SELECT T2.NAME
+	FROM [Sales].[SpecialOfferProduct] T1
+	JOIN [Production].[Product] T2 ON T1.ProductID = T2.ProductID
+	GROUP BY T1.ProductID, T2.NAME
+	HAVING COUNT(DISTINCT(T1.SpecialOfferID))>1

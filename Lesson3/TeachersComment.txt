@@ -1,0 +1,7 @@
+Well done!
+
+3.b
+Can be done without the subquery. ORDER BY can be added to the last query in UNION.
+
+3.c
+Actually, there were no conditions about filtering special offers with id=1 :) I was not expecting to see any filters.

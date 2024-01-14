@@ -1,0 +1,75 @@
+6.	¬ базе данных AdventureWorks2017 создать таблицу Patients дл€ ведени€ наблюдений за температурой пациентов больницы. “аблица должна содержать пол€:
+	ID Ц числовое поле. јвто заполн€етс€.
+	FirstName Ц им€ пациента.
+	LastName Ц фамили€ пациента.
+	SSN Ц уникальный идентификатор пациента.
+	Email Ц электронна€ почта пациента. ‘ормируетс€ по следующему правилу: перва€ больша€ буква FirstName + маленькие 3 буквы LastName + @mail.com (например, Akli@mail.com). ѕолезна€ ссылка здесь. 
+	Temp Ц температура пациента.
+	CreatedDate Ч дата измерений. 
+
+	--	DROP TABLE Patients
+	CREATE TABLE Patients (
+		ID INT IDENTITY NOT NULL,
+		FirstName NVARCHAR(100) NOT NULL,
+		LastName NVARCHAR(100),
+		SSN UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+		Email AS CONCAT(UPPER(LEFT(TRIM(FirstName),1)),ISNULL(LOWER(LEFT(TRIM(LastName),3)),''),'@mail.com'),
+		Temp DEC(3,1),
+		CreatedDate DATETIME NOT NULL DEFAULT GETDATE())
+	;
+
+
+7.	ƒобавить в таблицу несколько произвольных записей. 
+
+	INSERT INTO Patients (FirstName,LastName,Temp)
+	VALUES
+		('John','Doe',36.8),
+		('Jane','Doe',37.2),
+		('Stella','Borghese',36.2)
+	;
+
+
+8.	ƒобавить поле TempType со следующими значени€ми С< 37∞CТ,  С> 37∞CТ на основе значений из пол€ Temp ( используйте ALTER TABLE 
+ADD column AS ). ѕосмотрите на данные, которые получились.
+
+	ALTER TABLE Patients
+	ADD TempType AS 
+	CASE WHEN Temp>37 THEN '> 37∞C' ELSE '< 37∞C' END 
+	;
+
+	
+9.	—оздать представление Patients_v, показывающее температуру в градусах ‘аренгейта (∞F = ∞Cx9/5 + 32)
+
+	--	DROP VIEW Patients_v
+	CREATE VIEW  Patients_v AS 
+	SELECT ID, FirstName, LastName, Temp, Temp * 9 / 5 + 32 AS TempF
+	FROM Patients
+	;
+
+
+10.	—оздать функцию, котора€ возвращает температуру в градусах ‘аренгейта, при подаче на вход градусы в ÷ельси€х.
+
+	CREATE FUNCTION dbo.udfTempF(
+		@temp DEC(3,1)
+	)
+	RETURNS DEC(6,2)
+	AS 
+	BEGIN
+		RETURN @temp * 9 / 5 + 32;
+	END;
+
+	SELECT dbo.udfTempF(36.8) tempF
+	;
+
+
+11.	ѕерепишите решение задачи g из прошлого дз с использованием переменной, максимально упроща€ select.
+
+	DECLARE @StartDate DATETIME,
+			@DayNumber INT
+	SET @StartDate = DATEADD(DAY,1,EOMONTH(GETDATE(),-1))
+	SET @DayNumber = DATEPART(WEEKDAY,@StartDate)
+
+	SET DATEFIRST 1
+	SELECT CASE WHEN @DayNumber>5 THEN DATEADD(DAY,8-@DayNumber,@StartDate)
+				ELSE @StartDate END AS FIRSTDAY
+	;

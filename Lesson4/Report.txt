@@ -1,0 +1,155 @@
+3.	Посмотрите, какие ещё оконные функции cуществуют.
+	При каких значениях оконные функции Row Number, Rank и Dense Rank вернут одинаковый результат?
+
+		--функции вернут одинаковый результат в случае, когда ORDER BY осуществляется по столбцу уникальных значений (например, id)
+
+
+4.	Решите на базе данных AdventureWorks2017 следующие задачи. 
+
+a)	Изучите данные в таблице Production.UnitMeasure.  
+
+		--Проверьте, есть ли здесь UnitMeasureCode, начинающиеся на букву ‘Т’.
+		SELECT *
+		FROM [Production].[UnitMeasure]
+		WHERE [UnitMeasureCode] LIKE 'T%'
+		;
+
+		--Сколько всего различных кодов здесь есть? 
+		SELECT COUNT(DISTINCT([UnitMeasureCode])) AS QC
+		FROM [Production].[UnitMeasure]
+		;
+
+		--Вставьте следующий набор данных в таблицу:
+		--	•	TT1, Test 1, 9 сентября 2020
+		--	•	TT2, Test 2, getdate()
+		INSERT INTO [Production].[UnitMeasure] (UnitMeasureCode, Name, ModifiedDate) 
+		VALUES
+			('TT1','Test 1','2020-09-09'),
+			('TT2','Test 2',GETDATE())
+		;
+
+		--Проверьте теперь, есть ли здесь UnitMeasureCode, начинающиеся на букву ‘Т’.
+		SELECT *
+		FROM [Production].[UnitMeasure]
+		WHERE [UnitMeasureCode] LIKE 'T%'
+		;
+
+
+b)	Теперь загрузите вставленный набор в новую, не существующую таблицу Production.UnitMeasureTest.  
+
+		--1
+		SELECT UnitMeasureCode, Name, ModifiedDate --ИЛИ SELECT *
+		INTO [Production.UnitMeasureTest] 
+		FROM [Production].[UnitMeasure]
+		WHERE [UnitMeasureCode] LIKE 'T%'	
+		;
+
+		--2
+		INSERT INTO [Production.UnitMeasureTest] (UnitMeasureCode, Name, ModifiedDate) 
+		SELECT UnitMeasureCode, Name, ModifiedDate
+		FROM [Production].[UnitMeasure]
+		WHERE [UnitMeasureCode] LIKE 'T%'	
+		;
+
+		--Догрузите сюда информацию из Production.UnitMeasure по UnitMeasureCode = ‘CAN’.
+		INSERT INTO [Production.UnitMeasureTest] (UnitMeasureCode, Name, ModifiedDate) 
+		SELECT UnitMeasureCode, Name, ModifiedDate
+		FROM [Production].[UnitMeasure]
+		WHERE [UnitMeasureCode] = 'CAN'
+		;
+
+		-- Посмотрите результат в отсортированном виде по коду. 
+		SELECT *
+		FROM [Production.UnitMeasureTest]
+		ORDER BY [UnitMeasureCode]
+		;
+
+	
+c)	Измените UnitMeasureCode для всего набора из Production.UnitMeasureTest на ‘TTT’.
+
+		UPDATE [Production.UnitMeasureTest]
+		SET [UnitMeasureCode] = 'TTT'
+		;
+	
+
+d)	Удалите все строки из Production.UnitMeasureTest.
+
+		DELETE [Production.UnitMeasureTest]
+		;
+ 
+	
+e)	Найдите информацию из Sales.SalesOrderDetail по заказам 43659,43664.  
+
+		SELECT * 
+		FROM [Sales].[SalesOrderDetail]
+		WHERE SalesOrderID IN (43659,43664)
+		;
+
+		--С помощью оконных функций MAX, MIN, AVG найдем агрегаты по LineTotal для каждого SalesOrderID.	
+		SELECT DISTINCT SalesOrderID
+				,MAX(LineTotal) OVER (PARTITION BY SalesOrderID) AS MAXLINETOTAL
+				,MIN(LineTotal) OVER (PARTITION BY SalesOrderID) AS MINLINETOTAL
+				,AVG(LineTotal) OVER (PARTITION BY SalesOrderID) AS AVGLINETOTAL
+		FROM [Sales].[SalesOrderDetail]
+		WHERE SalesOrderID IN (43659,43664)		--ЕСЛИ НУЖНО ПО ВСЕМ ЗАКАЗАМ, ТО УДАЛЯЕМ УСЛОВИЕ WHERE
+		;
+
+
+f)	Изучите данные в объекте Sales.vSalesPerson. Создайте рейтинг cреди продавцов на основе годовых продаж SalesYTD, используя ранжирующую оконную функцию. 
+
+		SELECT [BusinessEntityID]
+			,DENSE_RANK() OVER (ORDER BY [SalesYTD] DESC) AS SALESRANK
+		FROM [Sales].[SalesPerson]
+		;
+
+		--Добавьте поле Login, состоящий из 3 первых букв фамилии в верхнем регистре + ‘login’ + TerritoryGroup (Null заменить на пустое значение). 
+		ALTER TABLE [Sales].[SalesPerson]
+		ADD LOGIN CHAR(150)
+		;
+
+		SELECT CONCAT(UPPER(LEFT(T2.LastName,3)),'login',ISNULL(TRIM(STR(T1.TerritoryID)),'')) AS LOGIN, T1.*	--ДЛЯ ПРОВЕРКИ ТОГО, ЧТО ВСТАВИМ
+		FROM [Sales].[SalesPerson] T1
+		JOIN [Person].[Person] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+		;
+
+		UPDATE [Sales].[SalesPerson]
+		SET LOGIN = CONCAT(UPPER(LEFT(T2.LastName,3)),'login',ISNULL(TRIM(STR(T1.TerritoryID)),''))
+		FROM [Sales].[SalesPerson] T1
+		JOIN [Person].[Person] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+		;
+
+		--Кто возглавляет рейтинг? А кто возглавлял рейтинг в прошлом году (SalesLastYear). 
+		SELECT T3.BusinessEntityID, T3.FirstName, T3.LastName, T3.LOGIN
+				,CASE WHEN T3.SALESRANKYTD = 1 THEN 'YTD' ELSE 'LASTYEAR' END AS FIRSTRANK 
+		FROM (
+				SELECT T1.BusinessEntityID, T2.FirstName, T2.LastName, T1.LOGIN
+						,DENSE_RANK() OVER(ORDER BY T1.SalesYTD DESC) AS SALESRANKYTD
+						,DENSE_RANK() OVER(ORDER BY T1.SalesLastYear DESC) AS SALESRANKLAST
+				FROM [Sales].[SalesPerson] T1
+				JOIN [Person].[Person] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+			 ) T3
+		WHERE T3.SALESRANKYTD =1 OR T3.SALESRANKLAST = 1
+		;
+ 
+
+
+g)	Найдите первый будний день месяца (FROM не используем). Нужен стандартный код на все времена.
+		
+		
+		SET DATEFIRST 1
+		SELECT CASE WHEN DATEPART(WEEKDAY,DATEADD(DAY,1,EOMONTH(GETDATE(),-1)))>5 THEN DATEADD(DAY,8-DATEPART(WEEKDAY,DATEADD(DAY,1,EOMONTH(GETDATE(),-1))),DATEADD(DAY,1,EOMONTH(GETDATE(),-1)))
+				ELSE DATEADD(DAY,1,EOMONTH(GETDATE(),-1)) END AS FIRSTDAY
+		;
+
+
+5.	 Давайте еще раз остановимся и отточим понимание функции count. Найдите значения count(1), count(name), count(id), count(*) для следующей таблицы:
+		Id(PK)		Name		DepName
+		1			null		A
+		2			null		null
+		3			A			C
+		4			B			C
+
+		--count(1) = 4
+		--count(name) = 2
+		--count(id) = 4
+		--count(*) = 4

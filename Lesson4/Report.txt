@@ -1,44 +1,44 @@
-3.	Посмотрите, какие ещё оконные функции cуществуют.
-	При каких значениях оконные функции Row Number, Rank и Dense Rank вернут одинаковый результат?
+3.	РџРѕСЃРјРѕС‚СЂРёС‚Рµ, РєР°РєРёРµ РµС‰С‘ РѕРєРѕРЅРЅС‹Рµ С„СѓРЅРєС†РёРё cСѓС‰РµСЃС‚РІСѓСЋС‚.
+	РџСЂРё РєР°РєРёС… Р·РЅР°С‡РµРЅРёСЏС… РѕРєРѕРЅРЅС‹Рµ С„СѓРЅРєС†РёРё Row Number, Rank Рё Dense Rank РІРµСЂРЅСѓС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚?
 
-		--функции вернут одинаковый результат в случае, когда ORDER BY осуществляется по столбцу уникальных значений (например, id)
+		--С„СѓРЅРєС†РёРё РІРµСЂРЅСѓС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚ РІ СЃР»СѓС‡Р°Рµ, РєРѕРіРґР° ORDER BY РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ РїРѕ СЃС‚РѕР»Р±С†Сѓ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ (РЅР°РїСЂРёРјРµСЂ, id)
 
 
-4.	Решите на базе данных AdventureWorks2017 следующие задачи. 
+4.	Р РµС€РёС‚Рµ РЅР° Р±Р°Р·Рµ РґР°РЅРЅС‹С… AdventureWorks2017 СЃР»РµРґСѓСЋС‰РёРµ Р·Р°РґР°С‡Рё. 
 
-a)	Изучите данные в таблице Production.UnitMeasure.  
+a)	РР·СѓС‡РёС‚Рµ РґР°РЅРЅС‹Рµ РІ С‚Р°Р±Р»РёС†Рµ Production.UnitMeasure.  
 
-		--Проверьте, есть ли здесь UnitMeasureCode, начинающиеся на букву ‘Т’.
+		--РџСЂРѕРІРµСЂСЊС‚Рµ, РµСЃС‚СЊ Р»Рё Р·РґРµСЃСЊ UnitMeasureCode, РЅР°С‡РёРЅР°СЋС‰РёРµСЃСЏ РЅР° Р±СѓРєРІСѓ вЂРўвЂ™.
 		SELECT *
 		FROM [Production].[UnitMeasure]
 		WHERE [UnitMeasureCode] LIKE 'T%'
 		;
 
-		--Сколько всего различных кодов здесь есть? 
+		--РЎРєРѕР»СЊРєРѕ РІСЃРµРіРѕ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРґРѕРІ Р·РґРµСЃСЊ РµСЃС‚СЊ? 
 		SELECT COUNT(DISTINCT([UnitMeasureCode])) AS QC
 		FROM [Production].[UnitMeasure]
 		;
 
-		--Вставьте следующий набор данных в таблицу:
-		--	•	TT1, Test 1, 9 сентября 2020
-		--	•	TT2, Test 2, getdate()
+		--Р’СЃС‚Р°РІСЊС‚Рµ СЃР»РµРґСѓСЋС‰РёР№ РЅР°Р±РѕСЂ РґР°РЅРЅС‹С… РІ С‚Р°Р±Р»РёС†Сѓ:
+		--	вЂў	TT1, Test 1, 9 СЃРµРЅС‚СЏР±СЂСЏ 2020
+		--	вЂў	TT2, Test 2, getdate()
 		INSERT INTO [Production].[UnitMeasure] (UnitMeasureCode, Name, ModifiedDate) 
 		VALUES
 			('TT1','Test 1','2020-09-09'),
 			('TT2','Test 2',GETDATE())
 		;
 
-		--Проверьте теперь, есть ли здесь UnitMeasureCode, начинающиеся на букву ‘Т’.
+		--РџСЂРѕРІРµСЂСЊС‚Рµ С‚РµРїРµСЂСЊ, РµСЃС‚СЊ Р»Рё Р·РґРµСЃСЊ UnitMeasureCode, РЅР°С‡РёРЅР°СЋС‰РёРµСЃСЏ РЅР° Р±СѓРєРІСѓ вЂРўвЂ™.
 		SELECT *
 		FROM [Production].[UnitMeasure]
 		WHERE [UnitMeasureCode] LIKE 'T%'
 		;
 
 
-b)	Теперь загрузите вставленный набор в новую, не существующую таблицу Production.UnitMeasureTest.  
+b)	РўРµРїРµСЂСЊ Р·Р°РіСЂСѓР·РёС‚Рµ РІСЃС‚Р°РІР»РµРЅРЅС‹Р№ РЅР°Р±РѕСЂ РІ РЅРѕРІСѓСЋ, РЅРµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰СѓСЋ С‚Р°Р±Р»РёС†Сѓ Production.UnitMeasureTest.  
 
 		--1
-		SELECT UnitMeasureCode, Name, ModifiedDate --ИЛИ SELECT *
+		SELECT UnitMeasureCode, Name, ModifiedDate --РР›Р SELECT *
 		INTO [Production.UnitMeasureTest] 
 		FROM [Production].[UnitMeasure]
 		WHERE [UnitMeasureCode] LIKE 'T%'	
@@ -51,63 +51,63 @@ b)	Теперь загрузите вставленный набор в новую, не существующую таблицу Productio
 		WHERE [UnitMeasureCode] LIKE 'T%'	
 		;
 
-		--Догрузите сюда информацию из Production.UnitMeasure по UnitMeasureCode = ‘CAN’.
+		--Р”РѕРіСЂСѓР·РёС‚Рµ СЃСЋРґР° РёРЅС„РѕСЂРјР°С†РёСЋ РёР· Production.UnitMeasure РїРѕ UnitMeasureCode = вЂCANвЂ™.
 		INSERT INTO [Production.UnitMeasureTest] (UnitMeasureCode, Name, ModifiedDate) 
 		SELECT UnitMeasureCode, Name, ModifiedDate
 		FROM [Production].[UnitMeasure]
 		WHERE [UnitMeasureCode] = 'CAN'
 		;
 
-		-- Посмотрите результат в отсортированном виде по коду. 
+		-- РџРѕСЃРјРѕС‚СЂРёС‚Рµ СЂРµР·СѓР»СЊС‚Р°С‚ РІ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅРѕРј РІРёРґРµ РїРѕ РєРѕРґСѓ. 
 		SELECT *
 		FROM [Production.UnitMeasureTest]
 		ORDER BY [UnitMeasureCode]
 		;
 
 	
-c)	Измените UnitMeasureCode для всего набора из Production.UnitMeasureTest на ‘TTT’.
+c)	РР·РјРµРЅРёС‚Рµ UnitMeasureCode РґР»СЏ РІСЃРµРіРѕ РЅР°Р±РѕСЂР° РёР· Production.UnitMeasureTest РЅР° вЂTTTвЂ™.
 
 		UPDATE [Production.UnitMeasureTest]
 		SET [UnitMeasureCode] = 'TTT'
 		;
 	
 
-d)	Удалите все строки из Production.UnitMeasureTest.
+d)	РЈРґР°Р»РёС‚Рµ РІСЃРµ СЃС‚СЂРѕРєРё РёР· Production.UnitMeasureTest.
 
 		DELETE [Production.UnitMeasureTest]
 		;
  
 	
-e)	Найдите информацию из Sales.SalesOrderDetail по заказам 43659,43664.  
+e)	РќР°Р№РґРёС‚Рµ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· Sales.SalesOrderDetail РїРѕ Р·Р°РєР°Р·Р°Рј 43659,43664.  
 
 		SELECT * 
 		FROM [Sales].[SalesOrderDetail]
 		WHERE SalesOrderID IN (43659,43664)
 		;
 
-		--С помощью оконных функций MAX, MIN, AVG найдем агрегаты по LineTotal для каждого SalesOrderID.	
+		--РЎ РїРѕРјРѕС‰СЊСЋ РѕРєРѕРЅРЅС‹С… С„СѓРЅРєС†РёР№ MAX, MIN, AVG РЅР°Р№РґРµРј Р°РіСЂРµРіР°С‚С‹ РїРѕ LineTotal РґР»СЏ РєР°Р¶РґРѕРіРѕ SalesOrderID.	
 		SELECT DISTINCT SalesOrderID
 				,MAX(LineTotal) OVER (PARTITION BY SalesOrderID) AS MAXLINETOTAL
 				,MIN(LineTotal) OVER (PARTITION BY SalesOrderID) AS MINLINETOTAL
 				,AVG(LineTotal) OVER (PARTITION BY SalesOrderID) AS AVGLINETOTAL
 		FROM [Sales].[SalesOrderDetail]
-		WHERE SalesOrderID IN (43659,43664)		--ЕСЛИ НУЖНО ПО ВСЕМ ЗАКАЗАМ, ТО УДАЛЯЕМ УСЛОВИЕ WHERE
+		WHERE SalesOrderID IN (43659,43664)		--Р•РЎР›Р РќРЈР–РќРћ РџРћ Р’РЎР•Рњ Р—РђРљРђР—РђРњ, РўРћ РЈР”РђР›РЇР•Рњ РЈРЎР›РћР’РР• WHERE
 		;
 
 
-f)	Изучите данные в объекте Sales.vSalesPerson. Создайте рейтинг cреди продавцов на основе годовых продаж SalesYTD, используя ранжирующую оконную функцию. 
+f)	РР·СѓС‡РёС‚Рµ РґР°РЅРЅС‹Рµ РІ РѕР±СЉРµРєС‚Рµ Sales.vSalesPerson. РЎРѕР·РґР°Р№С‚Рµ СЂРµР№С‚РёРЅРі cСЂРµРґРё РїСЂРѕРґР°РІС†РѕРІ РЅР° РѕСЃРЅРѕРІРµ РіРѕРґРѕРІС‹С… РїСЂРѕРґР°Р¶ SalesYTD, РёСЃРїРѕР»СЊР·СѓСЏ СЂР°РЅР¶РёСЂСѓСЋС‰СѓСЋ РѕРєРѕРЅРЅСѓСЋ С„СѓРЅРєС†РёСЋ. 
 
 		SELECT [BusinessEntityID]
 			,DENSE_RANK() OVER (ORDER BY [SalesYTD] DESC) AS SALESRANK
 		FROM [Sales].[SalesPerson]
 		;
 
-		--Добавьте поле Login, состоящий из 3 первых букв фамилии в верхнем регистре + ‘login’ + TerritoryGroup (Null заменить на пустое значение). 
+		--Р”РѕР±Р°РІСЊС‚Рµ РїРѕР»Рµ Login, СЃРѕСЃС‚РѕСЏС‰РёР№ РёР· 3 РїРµСЂРІС‹С… Р±СѓРєРІ С„Р°РјРёР»РёРё РІ РІРµСЂС…РЅРµРј СЂРµРіРёСЃС‚СЂРµ + вЂloginвЂ™ + TerritoryGroup (Null Р·Р°РјРµРЅРёС‚СЊ РЅР° РїСѓСЃС‚РѕРµ Р·РЅР°С‡РµРЅРёРµ). 
 		ALTER TABLE [Sales].[SalesPerson]
 		ADD LOGIN CHAR(150)
 		;
 
-		SELECT CONCAT(UPPER(LEFT(T2.LastName,3)),'login',ISNULL(TRIM(STR(T1.TerritoryID)),'')) AS LOGIN, T1.*	--ДЛЯ ПРОВЕРКИ ТОГО, ЧТО ВСТАВИМ
+		SELECT CONCAT(UPPER(LEFT(T2.LastName,3)),'login',ISNULL(TRIM(STR(T1.TerritoryID)),'')) AS LOGIN, T1.*	--Р”Р›РЇ РџР РћР’Р•Р РљР РўРћР“Рћ, Р§РўРћ Р’РЎРўРђР’РРњ
 		FROM [Sales].[SalesPerson] T1
 		JOIN [Person].[Person] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
 		;
@@ -118,7 +118,7 @@ f)	Изучите данные в объекте Sales.vSalesPerson. Создайте рейтинг cреди продавцов
 		JOIN [Person].[Person] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
 		;
 
-		--Кто возглавляет рейтинг? А кто возглавлял рейтинг в прошлом году (SalesLastYear). 
+		--РљС‚Рѕ РІРѕР·РіР»Р°РІР»СЏРµС‚ СЂРµР№С‚РёРЅРі? Рђ РєС‚Рѕ РІРѕР·РіР»Р°РІР»СЏР» СЂРµР№С‚РёРЅРі РІ РїСЂРѕС€Р»РѕРј РіРѕРґСѓ (SalesLastYear). 
 		SELECT T3.BusinessEntityID, T3.FirstName, T3.LastName, T3.LOGIN
 				,CASE WHEN T3.SALESRANKYTD = 1 THEN 'YTD' ELSE 'LASTYEAR' END AS FIRSTRANK 
 		FROM (
@@ -133,7 +133,7 @@ f)	Изучите данные в объекте Sales.vSalesPerson. Создайте рейтинг cреди продавцов
  
 
 
-g)	Найдите первый будний день месяца (FROM не используем). Нужен стандартный код на все времена.
+g)	РќР°Р№РґРёС‚Рµ РїРµСЂРІС‹Р№ Р±СѓРґРЅРёР№ РґРµРЅСЊ РјРµСЃСЏС†Р° (FROM РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј). РќСѓР¶РµРЅ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РєРѕРґ РЅР° РІСЃРµ РІСЂРµРјРµРЅР°.
 		
 		
 		SET DATEFIRST 1
@@ -142,7 +142,7 @@ g)	Найдите первый будний день месяца (FROM не используем). Нужен стандартный код
 		;
 
 
-5.	 Давайте еще раз остановимся и отточим понимание функции count. Найдите значения count(1), count(name), count(id), count(*) для следующей таблицы:
+5.	 Р”Р°РІР°Р№С‚Рµ РµС‰Рµ СЂР°Р· РѕСЃС‚Р°РЅРѕРІРёРјСЃСЏ Рё РѕС‚С‚РѕС‡РёРј РїРѕРЅРёРјР°РЅРёРµ С„СѓРЅРєС†РёРё count. РќР°Р№РґРёС‚Рµ Р·РЅР°С‡РµРЅРёСЏ count(1), count(name), count(id), count(*) РґР»СЏ СЃР»РµРґСѓСЋС‰РµР№ С‚Р°Р±Р»РёС†С‹:
 		Id(PK)		Name		DepName
 		1			null		A
 		2			null		null

@@ -1,0 +1,11 @@
+WITH cte_FIRSTNAME AS 
+	(SELECT DISTINCT FirstName
+	FROM [Person].[Person]),
+		
+	cte_LASTNAME AS
+	(SELECT DISTINCT LastName
+	FROM [Person].[Person])
+
+	SELECT TOP 1000000 *
+	FROM cte_FIRSTNAME
+	CROSS JOIN cte_LASTNAME

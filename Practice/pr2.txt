@@ -1,0 +1,58 @@
+1) Найдите людей и их номера телефонов, код города которых начинается на  4 и заканчивается на 5.
+(таблицы Person.PersonPhone, Person.Person) 
+
+SELECT T1.BusinessEntityID, T1.FirstName, T1.LastName,  T2.PhoneNumber
+FROM [Person].[Person] T1
+JOIN [Person].[PersonPhone] T2 ON T1.BusinessEntityID = T2.BusinessEntityID
+WHERE T2.PhoneNumber LIKE '4_5%'
+
+
+
+2) Отнести каждого человека из [HumanResources].[Employee] в свою возрастную категорию:
+Adolescence: 17-20
+Adults: 21-59
+Elderly: 60-75
+Senile: 76-90
+
+SELECT	BusinessEntityID, NationalIDNumber, JobTitle, BirthDate
+		,DATEDIFF(YEAR, BIRTHDATE,GETDATE()) AS Age
+		,CASE	WHEN DATEDIFF(YEAR, BIRTHDATE,GETDATE()) BETWEEN 17 AND 20 THEN  'Adolescence: 17-20'
+				WHEN DATEDIFF(YEAR, BIRTHDATE,GETDATE()) BETWEEN 21 AND 59 THEN  'Adults: 21-59'
+				WHEN DATEDIFF(YEAR, BIRTHDATE,GETDATE()) BETWEEN 60 AND 75 THEN  'Elderly: 60-75'
+				WHEN DATEDIFF(YEAR, BIRTHDATE,GETDATE()) BETWEEN 76 AND 90 THEN  'Senile: 76-90'
+			ELSE 'N/A' END AS AgeGroup
+FROM [HumanResources].[Employee] 
+
+
+
+3) Вывести самый дорогой продукт для каждого цвета из [Production].[Product] (3 способа)
+
+
+--------1
+SELECT T1.NAME, T1.Color, T1.StandardCost
+FROM [Production].[Product] T1
+JOIN (SELECT Color, MAX(StandardCost) AS MPrice
+		FROM [Production].[Product]
+		GROUP BY Color) T2 ON T1.Color = T2.Color AND T1.StandardCost = T2.MPrice
+ORDER BY T1.Color
+
+
+--------2
+SELECT * FROM 
+(
+SELECT T1.Name, T1.Color, T1.StandardCost
+		--,ROW_NUMBER() OVER (PARTITION BY T1.Color ORDER BY T1.StandardCost DESC) AS RN
+		,DENSE_RANK() OVER (PARTITION BY T1.Color ORDER BY T1.StandardCost DESC) AS RN
+FROM [Production].[Product] T1
+) T2
+WHERE T2.RN = 1
+ORDER BY T2.Color
+
+
+--------3
+SELECT * FROM
+(
+SELECT T1.Name, T1.StandardCost, T1.COLOR, MAX(T1.StandardCost) OVER (PARTITION BY COLOR) AS MPRICE
+FROM [Production].[Product] T1
+) T2
+WHERE T2.StandardCost = T2.MPRICE

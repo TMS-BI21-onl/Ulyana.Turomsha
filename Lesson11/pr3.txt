@@ -1,0 +1,56 @@
+13 IT-компания
+1) Employee (id, first_name, last_name, role, salary, hire_date, birth_date, dep_id)
+2) Department (id, name)
+3) Project(id, customer_id, name, date_start, date_end, status)
+4) Tasks (id, project_id, employee_id, description, estimated time to solve, status, release_id)
+5) Costs (id, project_id, employee_id, price) - here is the table that shows how much money customer is paying for each developer (often it's more than developer's salary)
+6) Customer( id, name, description, contact_phone, contact_email)
+7) Releases(id, project_id, name, datetime)
+
+	1. Найти стоимость каждого релиза для проекта "Sunflower". Стоимость релиза = сумма костов каждого работника, кто работал над задачами
+
+	--Не очень понятно, как считать косты работников (по price в Costs или по salary в Employee). 
+	--Поэтому, при решении исходила из костов, которые отражены для каждого работника в рамках проектов в таблице Costs, предполагая, что price для каждого работника в рамках каждого релиза одинаковый.
+	
+		WITH 
+		Task_Employee AS (
+			SELECT DISTINCT T1.Employee_ID, T1.Release_ID, T2.Name AS Project_Name,  T3.Price
+			FROM Tasks T1
+			JOIN Project T2 ON T1.Project_ID = T2.ID
+			JOIN Costs T3 ON T1.Project_ID = T3.Project_ID AND T1.Employee_ID = T3.Employee_ID
+			WHERE UPPER(T2.Name) = 'SUNFLOWER' AND T1.Release_ID IS NOT NULL
+		)
+
+		SELECT T5.Project_Name, T4.ID AS Release_Num, T4.Name AS Release_Name, SUM(T5.Price) AS Release_Cost
+		FROM Releases T4
+		JOIN Task_Employee T5 ON T4.ID = T5.Release_ID
+		GROUP BY T5.Project_Name, T4.ID, T4.Name
+		ORDER BY 1,2
+
+
+
+
+
+	2.Вывести транспонированную таблицу самых выгодных (для клиентов) сотрудников за 2023 год. Выгодность=стоимость одной выполненной задачи. Оси транспонированной таблицы - сотрудник и месяц.
+	
+	--В задании указано, что нужно вывести САМЫХ выгодных. Нужно вывести топ самых выгодных в рамках каждого месяца? 
+	--В решении вывожу всех сотрудников и стоимость одной выполненной задачи в рамках каждого месяца.  
+	--Стоимость выполненной задачи рассчитана исходя из зарплаты и кол-ва реализованных в рамках релизов задач по месяцам.
+	
+		SELECT Employee,[JANUARY],[FEBRUARY],[MARCH],[APRIL],[MAY],[JUNE],[JULY],[AUGUST],[SEPTEMBER],[OCTOBER],[NOVEMBER],[DECEMBER]
+		FROM
+			(SELECT T1.Employee_id, CONCAT(T3.First_name,' ',T3.Last_name) AS Employee
+				,DATENAME(month,T2.Datetime) AS Months 
+				,ROUND(T3.Salary / COUNT(T1.id),0) AS Task_Cost
+			FROM Tasks T1
+			JOIN Releases T2 ON T1.Release_id = T2.id
+			JOIN Employee T3 ON T1.Employee_id = T3.id
+			WHERE T2.Datetime BETWEEN '2023-01-01' AND '2023-12-31'
+			GROUP BY T1.Employee_id, CONCAT(T3.First_name,' ',T3.Last_name),DATENAME(month,T2.Datetime),T3.Salary
+		) AS SourceTable
+		PIVOT
+		(
+			SUM(Task_Cost)
+			FOR Months IN ([JANUARY],[FEBRUARY],[MARCH],[APRIL],[MAY],[JUNE],[JULY],[AUGUST],[SEPTEMBER],[OCTOBER],[NOVEMBER],[DECEMBER])
+		) AS PivotTable
+		ORDER BY 1

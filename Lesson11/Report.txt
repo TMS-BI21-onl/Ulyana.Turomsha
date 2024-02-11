@@ -1,0 +1,228 @@
+3.	Создать таблицу с количеством использования функций, используя data_for_merge.csv, заполнить ее через оператор merge.  Итоговая таблица с результатами должна иметь вид
+Function_name	Function_count
+CASE	4
+CAST	2
+CONCAT	7
+
+
+-------------ВАРИАНТ РЕШЕНИЯ 1
+
+----1
+DROP PROCEDURE dbo.uspMerge;
+DROP TABLE dbo.temp_merge, dbo.merge_result;
+
+----2
+CREATE TABLE	dbo.merge_result (function_name NVARCHAR(128), function_count INT);
+CREATE TABLE	dbo.temp_merge (function_name NVARCHAR(128), cnt INT);
+
+----3
+CREATE PROCEDURE dbo.uspMerge
+	@POSITION INT
+		AS
+BEGIN
+	DECLARE @ColumnName nvarchar(128)
+
+	SELECT @ColumnName = COLUMN_NAME
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE TABLE_NAME = 'data_for_merge' AND ORDINAL_POSITION = @POSITION  
+	EXEC ('SELECT DISTINCT ' + @ColumnName + ' AS ColNum, COUNT(DISTINCT(' + @ColumnName + ')) AS Q FROM dbo.data_for_merge WHERE ' + @ColumnName + ' IS NOT NULL GROUP BY ' + @ColumnName +';') 
+END
+;
+
+----4
+DECLARE @COL INT
+SET @COL = 1
+	
+WHILE @COL <= (SELECT COUNT(1) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'data_for_merge')
+BEGIN
+	
+	TRUNCATE TABLE dbo.temp_merge
+	INSERT INTO dbo.temp_merge EXEC dbo.uspMerge @COL
+	
+	MERGE dbo.merge_result target
+	USING dbo.temp_merge source ON target.function_name=source.function_name
+		
+	WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+
+	SET @COL = @COL + 1
+END;
+
+SELECT * FROM dbo.merge_result ORDER BY function_name;
+
+
+
+
+-------------ВАРИАНТ РЕШЕНИЯ 2
+
+DROP TABLE dbo.merge_result;
+
+CREATE TABLE	dbo.merge_result (function_name NVARCHAR(128), function_count INT);
+
+--1
+
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(alex) AS function_name, count(alex) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE alex is not null 
+		GROUP BY alex) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--2
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(carlos) AS function_name, count(carlos) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE carlos is not null 
+		GROUP BY carlos) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--3
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(charles) AS function_name, count(charles) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE charles is not null 
+		GROUP BY charles) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--4
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(daniel) AS function_name, count(daniel) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE daniel is not null 
+		GROUP BY daniel) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--5
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(esteban) AS function_name, count(esteban) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE esteban is not null 
+		GROUP BY esteban) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--6
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(fred) AS function_name, count(fred) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE fred is not null 
+		GROUP BY fred) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--7
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(george) AS function_name, count(george) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE george is not null 
+		GROUP BY george) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--8
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(lando) AS function_name, count(lando) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE lando is not null 
+		GROUP BY lando) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+--9
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(lewis) AS function_name, count(lewis) AS cnt 
+		FROM dbo.data_for_merge 
+		WHERE lewis is not null 
+		GROUP BY lewis) source ON target.function_name = source.function_name
+WHEN MATCHED 
+		THEN	UPDATE SET target.function_count = target.function_count + source.cnt
+	WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, source.cnt);
+
+SELECT * FROM dbo.merge_result ORDER BY function_name;
+
+
+
+
+-------------ВАРИАНТ РЕШЕНИЯ 3
+DROP TABLE dbo.merge_result;
+
+CREATE TABLE	dbo.merge_result (function_name NVARCHAR(128), function_count INT);
+
+MERGE dbo.merge_result target
+USING 
+	(SELECT DISTINCT(function_name) as function_name, COUNT(1) AS cnt FROM (
+					SELECT Alex AS function_name
+					FROM dbo.data_for_merge 
+					UNION ALL
+
+					SELECT Carlos
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT Charles
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT Daniel
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT Esteban
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT Fred
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT George
+					FROM dbo.data_for_merge	
+					UNION ALL
+
+					SELECT Lando
+					FROM dbo.data_for_merge
+					UNION ALL
+
+					SELECT Lewis
+					FROM dbo.data_for_merge) t1
+				WHERE t1.function_name is not null
+				GROUP BY function_name) source on target.function_name = source.function_name
+WHEN NOT MATCHED BY TARGET
+		THEN	INSERT (function_name,function_count)
+				VALUES (source.function_name, cnt);
+
+SELECT * FROM dbo.merge_result ORDER BY function_name;

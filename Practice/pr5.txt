@@ -1,0 +1,56 @@
+1. Найти ProductSubcategoryID из Production.Product, где мин вес такого ProductSubcategoryID больше 150. 
+		select distinct t1.ProductSubcategoryID , t2.Name
+		from [Production].[Product] t1
+		join [Production].[ProductSubcategory] t2 on t1.ProductSubcategoryID=t2.ProductSubcategoryID
+		where t1.Weight>=150
+
+
+2. Найти самый дорогой продукт (поле StandardCost) из Production.Product. (4 способа)
+
+----1
+		select top 1 with ties Name, StandardCost
+		from [Production].[Product] t1
+		order by t1.StandardCost desc
+
+----2
+		select * from (
+		select name, StandardCost
+			,RANK() over (order by StandardCost desc) as rn
+			--,ROW_NUMBER() over (order by StandardCost desc) as rn
+		from [Production].[Product] t1
+		) t1
+		where t1.rn=1
+
+----3
+		select Name, StandardCost
+		from [Production].[Product] t1
+		where StandardCost = (select max(StandardCost) from [Production].[Product])
+
+
+----4
+		select * from (
+		select Name, StandardCost
+				,max(StandardCost) over () as maxprice
+		from [Production].[Product] t1
+		) t1
+		where t1.StandardCost = t1.maxprice
+
+
+3. Найти клиентов, которые за последний год не совершили ни одного заказа (схема GROUP2)
+
+		select t1.clientid, t1.firstname, t1.lastname
+		from client t1
+		left join 
+			(select clientid
+				from order 
+				where DATEDIFF(day, orderdate, GETDATE()) <365) t2 on t1.clientid = t2.clientsid
+		where t2.clientid is null
+
+
+4. Найти для каждого поставщика кол-во заказов за последние 5 лет.  (схема GROUP2)
+
+		select t2.name, count(t1.orderid) as qo
+		from order t1
+		join vendor t2 on t1.vendorid = t2.vendorid
+		where t1.orderdate between DATEADD(year,-5, getdate()) and getdate() 
+		group by t2.name

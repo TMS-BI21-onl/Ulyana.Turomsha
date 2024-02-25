@@ -1,0 +1,34 @@
+1.	Для своей базы данных создайте объект для нахождения общего рейтинга топ 50 продавцов за всю историю продаж, 
+где рейтинг определяется количеством баллов за количество продаж в день 
+(7 и более продаж – 4 балла, 6-5 – 3 балла, 4-3 - 2 балла, меньше 2 – 1 балл). 
+		
+		
+		DROP VIEW IF EXISTS VTop50Employee
+
+		CREATE VIEW VTop50Employee
+		AS
+		SELECT TOP 50 WITH TIES T1.EMPSID, T1.FIRSTNAME, T1.LASTNAME
+		FROM (
+		SELECT R.REQDATE, R.EMPSID, E.FIRSTNAME, E.LASTNAME
+				,CASE	WHEN COUNT(R.REQSID)>=7 THEN 4
+					WHEN COUNT(R.REQSID)>=5	THEN 3
+					WHEN COUNT(R.REQSID)>=3	THEN 2
+				ELSE 1 END AS RN	
+				--,COUNT(R.REQSID) AS CNT
+		FROM [CREDITAPPLICATION].[DBO].[REQUESTS] R
+		JOIN [CREDITAPPLICATION].[DBO].[EMPLOYEE] E ON R.EMPSID = E.EMPSID
+		GROUP BY R.REQDATE, R.EMPSID, E.FIRSTNAME, E.LASTNAME
+		) T1
+
+		GROUP BY T1.EMPSID, T1.FIRSTNAME, T1.LASTNAME
+		ORDER BY SUM(T1.RN) DESC
+
+		SELECT * FROM VTop50Employee
+		
+
+2.	Изучите данные графики. Как можно улучшить каждый? Пришлите ваши предложения (текстом, реализовывать не надо), а позже разберем на занятии.
+
+	1. Убрать тени, заливку области диаграммы, легенду; сделать столбцы диаграммы одноцветными; поднять заголовок.
+	2. Добавить заголовок; убрать объем, тени, поворот; сделать либо прямоугольные столбцы и изменить шкалу (начать с 0), либо сделать круговую диаграмму.
+	3. Сократить заголовок и подписи; именить размер столбцов (сделать более узкими), добавить подписи над столбцами.
+	
